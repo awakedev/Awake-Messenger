@@ -88,7 +88,7 @@ public class Login extends JFrame {
 				String name = txtName.getText();
 				String address = txtIP.getText();
 				int port = Integer.parseInt(txtPort.getText());
-				login(address, address, port);
+				login(name, address, port);
 			}
 
 			

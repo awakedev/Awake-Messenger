@@ -5,16 +5,22 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import javax.swing.text.DefaultCaret;
 
 public class Client extends JFrame {
 
@@ -26,13 +32,24 @@ public class Client extends JFrame {
 	private String name, address;
 	private int port;
 	private JTextField txtMessage;
-	private JTextArea txtAreaHistory;
+	private JTextArea history;
+	private DefaultCaret caret;
+	
+	private DatagramSocket socket;
+	private InetAddress ip;
 
 	public Client(String name, String address, int port) {
 		setTitle("Awake Messenger Client");
 		this.name = name;
 		this.address = address;
 		this.port = port;
+		boolean connect = openConnection(String address, int port);
+		
+		if (!connect) {
+			System.err.println("Connection failed");
+			console("Failed connection!");
+		}
+		
 		createWindow();
 		//console("Attempting connection to " + address + " : " + port + "with user: " + name);
 		console("Attempting connection to " + name);
@@ -40,6 +57,21 @@ public class Client extends JFrame {
 		console("Successfully disconnected!");
 
 	}
+	
+	private boolean openConnection(String address, int port) {
+		try {
+			socket = new DatagramSocket();
+			ip = InetAddress.getByName(address);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return false;
+		} catch (SocketException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
 	
 	private void createWindow() {
 		try {
@@ -62,17 +94,21 @@ public class Client extends JFrame {
 		gbl_contentPane.rowWeights = new double[]{1.0, Double.MIN_VALUE, 0.0};
 		contentPane.setLayout(gbl_contentPane);
 		
-		txtAreaHistory = new JTextArea();
-		txtAreaHistory.setEditable(false);
-		GridBagConstraints gbc_txtAreaHistory = new GridBagConstraints();
-		gbc_txtAreaHistory.insets = new Insets(0, 0, 5, 5);
-		gbc_txtAreaHistory.fill = GridBagConstraints.BOTH;
-		gbc_txtAreaHistory.gridx = 1;
-		gbc_txtAreaHistory.gridy = 1;
-		gbc_txtAreaHistory.gridwidth = 2;
-		gbc_txtAreaHistory.insets = new Insets(0, 5, 0, 0);
+		history = new JTextArea();
+		history.setEditable(false);
+		caret = (DefaultCaret) history.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		JScrollPane scroll = new JScrollPane(history);  
+		GridBagConstraints scrollConstraints = new GridBagConstraints();
+		scrollConstraints.insets = new Insets(0, 0, 5, 5);
+		scrollConstraints.fill = GridBagConstraints.BOTH;
+		scrollConstraints.gridx = 0;
+		scrollConstraints.gridy = 0;
+		scrollConstraints.gridheight = 2;
+		scrollConstraints.gridwidth = 3;
+		scrollConstraints.insets = new Insets(0, 5, 0, 0);
 		
-		contentPane.add(txtAreaHistory, gbc_txtAreaHistory);
+		contentPane.add(scroll, scrollConstraints);
 		
 		txtMessage = new JTextField();
 		txtMessage.addKeyListener(new KeyAdapter() {
@@ -90,6 +126,7 @@ public class Client extends JFrame {
 		gbc_txtMessage.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtMessage.gridx = 1;
 		gbc_txtMessage.gridy = 2;
+		gbc_txtMessage.gridwidth = 2;
 		contentPane.add(txtMessage, gbc_txtMessage);
 		txtMessage.setColumns(10);
 
@@ -112,7 +149,8 @@ public class Client extends JFrame {
 	}
 	
 	public void console(String message) {
-		txtAreaHistory.append(message + "\n\r");
+		history.append(message + "\n\r");
+		history.setCaretPosition(history.getDocument().getLength());
 	}
 	
 	private void send(String message) {

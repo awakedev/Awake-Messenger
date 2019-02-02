@@ -7,6 +7,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -43,7 +45,7 @@ public class Client extends JFrame {
 		this.name = name;
 		this.address = address;
 		this.port = port;
-		boolean connect = openConnection(String address, int port);
+		boolean connect = openConnection(address, port);
 		
 		if (!connect) {
 			System.err.println("Connection failed");
@@ -57,6 +59,20 @@ public class Client extends JFrame {
 		console("Successfully disconnected!");
 
 	}
+	
+	private String receive() {
+		byte[] data = new byte[1024];
+		DatagramPacket packet = new DatagramPacket(data, data.length);
+		try {
+			socket.receive(packet);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		String message = new String(packet.getData());
+		return message;
+	}
+	
 	
 	private boolean openConnection(String address, int port) {
 		try {

@@ -39,6 +39,8 @@ public class Client extends JFrame {
 	
 	private DatagramSocket socket;
 	private InetAddress ip;
+	
+	private Thread send;
 
 	public Client(String name, String address, int port) {
 		setTitle("Awake Messenger Client");
@@ -73,6 +75,14 @@ public class Client extends JFrame {
 		return message;
 	}
 	
+	private String send(byte [] data) {
+		send = new Thread("Send") {
+			public void run() {
+				DatagramPacket packet = new DatagramPacket(data, data.length, address);
+			}
+		};
+		send.start();
+	}
 	
 	private boolean openConnection(String address, int port) {
 		try {

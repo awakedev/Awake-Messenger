@@ -55,10 +55,7 @@ public class Client extends JFrame {
 		}
 		
 		createWindow();
-		//console("Attempting connection to " + address + " : " + port + "with user: " + name);
-		console("Attempting connection to " + name);
-
-		console("Successfully disconnected!");
+		console("Attempting connection to " + address + " : " + port + "with user: " + name);
 
 	}
 	

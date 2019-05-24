@@ -1,3 +1,3 @@
 # Awake Messenger
 
-Messenger app developed in Java
+Messenger application    developed in Java
